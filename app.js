@@ -51,8 +51,8 @@ const titles = require("./titles");
 const urls = require("./urls");
 
 const N = 3023;
-const W = 27602;
-const avgdl = 138.27125372146875;
+const W = 27523;
+const avgdl = 134.16969897452861;
 
 // Starting the Server
 const app = express();
@@ -83,13 +83,13 @@ app.get("/", (req, res) => {
 // GET Route to perform our search
 app.get("/search", (req, res) => {
   const query = req.query.query;
-  const oldString = query.split(" ");
-  const newString = removeStopwords(oldString);
+  const oldString = query.split(" "); //splitting across space
+  const newString = removeStopwords(oldString); //removing uncessary words
   newString.sort(); // newString is an array
 
   let queryKeywords = [];
 
-  // Seperates numbers from query string
+  // Seperates numbers from query string (REGEX code)
   let getNum = query.match(/\d+/g);
 
   //Push all the numbers and their word form to query keywords
@@ -102,20 +102,16 @@ app.get("/search", (req, res) => {
 
       numKeys.forEach((key) => {
         let spaceSplits = key.split(" ");
-        if (numKeys.length > 1) queryKeywords.push(key);
+        if (numKeys.length > 1) queryKeywords.push(key); //pushing numkeys elements 
         if (spaceSplits.length > 1)
           spaceSplits.forEach((key) => {
-            queryKeywords.push(key);
+            queryKeywords.push(key);  //pushing spaceSplits elements which are split of numkey elements
           });
       });
     });
   }
 
-  // twoSum => two sum
-
-  // twojnjgk
-  // 2
-
+// we add original keywords of query to queryKeywords
   for (let j = 0; j < newString.length; j++) {
     // Original Keywords
     newString[j] = newString[j].toLowerCase();
@@ -135,30 +131,30 @@ app.get("/search", (req, res) => {
     if (x != newString[j]) queryKeywords.push(x);
   }
 
-  // Grammer and Spell Check
-
+  // Grammer and Spell Check 
   let queryKeywordsNew = queryKeywords;
   queryKeywords.forEach((key) => {
     let key1 = key;
     let key2 = lemmatizer.verb(key1); // adds -> add
     queryKeywordsNew.push(key2);
 
-    let spellkey1 = spellcheck.getCorrections(key1);
+    let spellkey1 = spellcheck.getCorrections(key1); //to compare at dist 1 with our given dictinonary
     let spellkey2 = spellcheck.getCorrections(key2);
-    if (spellkey1.indexOf(key1) == -1) {
+    if (spellkey1.indexOf(key1) == -1) { //if the original key1 is not present means it was wrong word so we add corrected version
       spellkey1.forEach((k1) => {
         queryKeywordsNew.push(k1);
         queryKeywordsNew.push(lemmatizer.verb(k1));
       });
     }
 
-    if (spellkey2.indexOf(key2) == -1) {
+    if (spellkey2.indexOf(key2) == -1) { // same with lemmatized version of original key
       spellkey2.forEach((k2) => {
         queryKeywordsNew.push(k2);
         queryKeywordsNew.push(lemmatizer.verb(k2));
       });
     }
   });
+
 
   // Updating the querykeywords array
   queryKeywords = queryKeywordsNew;
@@ -172,7 +168,6 @@ app.get("/search", (req, res) => {
       temp.push(queryKeywords[i]);
     }
   }
-
   queryKeywords = temp;
   queryKeywords.sort();
 
@@ -199,15 +194,15 @@ app.get("/search", (req, res) => {
   // Similarity Score of each doc with query string
   const arr = [];
 
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < N; i++) { //finding score for each document
     let s = 0;
-    qid.forEach((key) => {
+    qid.forEach((key) => { // finding score of each query keyword
       const idfKey = IDF[key];
       let tf = 0;
       for (let k = 0; k < TF[i].length; k++) {
-        if (TF[i][k].id == key) {
-          tf = TF[i][k].val / length[i];
-
+        if (TF[i][k].id == key) { //checking if that keyword is present in TF of ith document
+          tf = TF[i][k].val ;
+          // tf = TF[i][k].val / length[i];
           break;
         }
       }
@@ -221,7 +216,7 @@ app.get("/search", (req, res) => {
       s += BM25;
     });
 
-    // Title Similarity
+    // Title Similarity to our query string
     const titSim = stringSimilarity.compareTwoStrings(
       titles[i],
       query.toLowerCase()
@@ -235,13 +230,13 @@ app.get("/search", (req, res) => {
   arr.sort((a, b) => b.sim - a.sim);
 
   let response = [];
-  let nonZero = 0;
+  let nonZero = 0; // to keep count of document which has score greater than zero
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) { //taking top 10 questions with highest score
     if (arr[i].sim != 0) nonZero++;
     const str = path.join(__dirname, "Problems");
-    const str1 = path.join(str, `problem_text_${arr[i].id + 1}.txt`);
-    let question = fs.readFileSync(str1).toString().split("\n");
+    const str1 = path.join(str, `problem_text_${arr[i].id + 1}.txt`); //getting question text through id
+    let question = fs.readFileSync(str1).toString().split("\n"); //splitting across lines 
     let n = question.length;
     let problem = "";
 
@@ -262,7 +257,7 @@ app.get("/search", (req, res) => {
   console.log(response);
 
   // res.locals.titles = response;
-  setTimeout(() => {
+  setTimeout(() => { // to make it little slow to give simulation feeling
     if (nonZero) res.json(response);
     else res.json([]);
   }, 1000);
@@ -275,16 +270,14 @@ app.get("/question/:id", (req, res) => {
   const str = path.join(__dirname, "Problems");
   const str1 = path.join(str, `problem_text_${id + 1}.txt`);
   let text = fs.readFileSync(str1).toString();
-  // console.log(text);
   if (id <= 1773) {
-    text = text.split("ListShare");
+    text = text.split("ListShare"); // to remove leetcode extra text
     text = text[1];
   }
 
-  var find = "\n";
-  var re = new RegExp(find, "g");
-
-  text = text.replace(re, "<br/>");
+  var find = "\n";//Replaces all newline characters (\n) in the text with HTML <br/> tags 
+  var re = new RegExp(find, "g"); //so that the problem text can be properly formatted for web display.
+ text = text.replace(re, "<br/>");
 
   let title = titles[id];
   title = title.split("-");
@@ -293,7 +286,8 @@ app.get("/question/:id", (req, res) => {
     temp += title[i] + " ";
   }
   title = temp;
-  title = title.capitalize();
+  title = title.capitalize(); //capitalize func make first letter uppercase of every word of title
+
   let type = 0;
   if (id < 1774) type = "Leetcode";
   else if (id < 2214) type = "Interview Bit";
@@ -306,7 +300,6 @@ app.get("/question/:id", (req, res) => {
   };
 
   res.locals.questionObject = questionObject;
-
   res.locals.questionBody = text;
   res.locals.questionTitle = titles[id];
   res.locals.questionUrl = urls[id];
@@ -321,21 +314,4 @@ app.listen(port, () => {
   console.log("Server is runnning on port " + port);
 });
 
-// Binary Search Tree -> ['binary', 'search', 'tree', 'orange'] -> ['binary', 'search', 'tree']
-// Keywords -> []
-// const score = [];
-// for(const document of documents) {
-// bm25
-// score.push({id: document_id, score: bm25})
-// }
 
-// O(N*W)
-// score.sort((a, b) => {
-//  return b.score-a.score;
-// })
-
-// for(let i=0; i< 10; i++){
-// console.log(document[score[i]._id]);
-//}
-//
-//
