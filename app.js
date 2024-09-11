@@ -70,7 +70,11 @@ Object.defineProperty(String.prototype, "capitalize", {
 app.set("view engine", "ejs");
 
 // Path to our Public Assets Folder
-app.use(express.static(path.join(__dirname, "/public")));
+// app.use(express.static(path.join(__dirname, "/public")));
+app.set("view engine", "ejs");  // to use ejs throughout the server
+app.set("views", path.join(__dirname,"views")); //done
+app.use(express.static(path.join(__dirname,"public"))); //This means that any files in the "public" directory of your project can be accessed directly via the URL.
+app.use(express.json()); // this tells express app that you need to receive json data as your body (express.json() this is middleware)
 
 // Making a dictionary with all our keywords
 const spellcheck = new natural.Spellcheck(keywords);
