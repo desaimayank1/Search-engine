@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path=require("path");
+let usersPath = path.join(process.cwd(), 'TF.txt');
 const N = 3023;
 // const W = 37641;
 let tf = new Array(N);
@@ -7,7 +9,7 @@ for (let i = 0; i < N; i++) {
   tf[i] = new Array(0);
 }
 
-const TF = fs.readFileSync("TF.txt").toString();
+const TF = fs.readFileSync(usersPath).toString();
 
 const temp = TF.split("\n");
 for (let k = 0; k < temp.length; k++) {

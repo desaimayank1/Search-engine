@@ -1,5 +1,7 @@
 const fs = require("fs");
-const magnitudestr = fs.readFileSync("Magnitude.txt").toString();
+const path=require("path");
+let usersPath = path.join(process.cwd(), 'Magnitude.txt');
+const magnitudestr = fs.readFileSync(usersPath).toString();
 const magnitude = magnitudestr.split("\n");
 // console.log(magnitude);
 for (let i = 0; i < magnitude.length; i++) {

@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path=require("path");
+let usersPath = path.join(process.cwd(), 'TFIDF.txt');
 const N = 2874;
 const W = 37641;
 const tfidf = new Array(N);
@@ -7,7 +9,7 @@ for (let i = 0; i < N; i++) {
   tfidf[i] = new Array(W).fill(0);
 }
 
-const TFIDF = fs.readFileSync("TFIDF.txt").toString();
+const TFIDF = fs.readFileSync(usersPath).toString();
 const temp = TFIDF.split("\n");
 for (let k = 0; k < temp.length; k++) {
   const arr = temp[k].split(" ");

@@ -1,5 +1,7 @@
 const fs = require("fs");
-const lengthstr = fs.readFileSync("length.txt").toString();
+const path=require("path");
+let usersPath = path.join(process.cwd(), 'length.txt');
+const lengthstr = fs.readFileSync(usersPath).toString();
 const length = lengthstr.split("\n");
 let cnt=0;
 for (let i = 0; i < length.length; i++) {
